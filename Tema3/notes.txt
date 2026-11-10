@@ -1,0 +1,59 @@
+O retea cu:
+784 neuroni de intrare (28x28)
+100 neuroni pe strat ascuns
+10 neuroni pe iesire (0..9)
+
+vom avea:
+
+intrare: matricea X = nx784 (n=nr de elemente din setul de date)
+intre intrare si layer ascuns:
+    * w1 = 784x100 
+    * b1 = 1x100
+    * z1 = 60000x100
+    * y1 = ReLU(z1) = 60000x100
+
+intre layer ascuns si layer iesire:
+    * w2 = 100x10 
+    * b2 = 1x10
+    * z2 = 60000x10
+    * y2 = Softmax(z1) = 600000x10
+
+matrici pentru backwards:
+    * T = 60000x10 (distributie probabilitati one-hot TARGET) 
+    * eL = 60000x10 (eroarea pe ultimul strat)
+    * gradW2 = 100x10 (gradientii pt w2)
+    * gradB2 = 1x10 (gradientii pt b2)
+
+    * e1 = 60000x100 (eroarea pt hidden layer)
+    * gradW1 = 784x100 (gradientii pt w1)
+    * gradB1 = 1x100 (gradientii pt b1)
+
+
+START LOOP
+forward step:
+    calculam z1 = X @ w1 + b1
+    y1 = ReLU(z1)
+
+    apoi, z2 = y1 @ w2 + b2
+    y2 = Softmax(z2)
+
+backward step:
+    calculam:
+        eL = -(T-y2)
+        gradW2 = y1.T @ eL
+        gradB2 = eL.sum() //suma fiecarei coloane
+
+        e1=(y1)' * (eL @ w2.T) (cu y1 derivat fiind functia ReLU derivata, care va fi o matrice de 60000x100, cu elemetele 1 unde ReLU e pozitiv, 0 altfel)
+        gradW1 = X.T @ e1
+        gradB1 = e1.sum()
+
+actualizam w1,w2,b1,b2 cu matricile grad respective inmultite cu learning rate
+w1 = w1 - lr*gradW1
+w2 = w2 - lr*gradW2
+b1 = b1 - lr*gradB1
+b2 = b2 - lr*gradB2
+
+END LOOP (Repetam pana cand depasim epocile)
+
+
+
